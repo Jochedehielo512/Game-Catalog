@@ -8,7 +8,10 @@
 
     <ItemGroup>
 		<ProjectReference Include="..\..\05_Modelo\GameCatalog.Modelo\GameCatalog.Modelo.csproj" />
+		<None Include="..\..\Datos\Dataset\vgsales.csv">
+			<Link>Datos\Dataset\vgsales.csv</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
-
 
 </Project>
