@@ -1,5 +1,7 @@
-﻿using GameCatalog.Repositorio.Implementaciones;
+﻿using GameCatalog.Modelo.Entidades;
+using GameCatalog.Repositorio.Implementaciones;
 using GameCatalog.Repositorio.Implementaciones.Consultas;
+using GameCatalog.Repositorio.Interfaces;
 using System.Data;
 
 // 1. Creamos la estructura de datos en memoria.
@@ -21,96 +23,116 @@ int total = importador.CargarDesdeCsv(rutaCsv, catalogo);
 // 5. Creamos el objeto para realizar las consultas LINQ
 ConsultasVideojuegos consultas = new ConsultasVideojuegos(catalogo.Datos);
 
-// 6. Obtener los 10 videojuegos más vendidos.
-var top10 = consultas.ObtenerTop10Videojuegos();
+string opcion;
 
-// 7. Mostramos los 10 videojuegos más vendidos.
-Console.WriteLine("\nTOP 10 VIDEOJUEGOS MÁS VENDIDOS");
-Console.WriteLine("--------------------------------");
-
-foreach (DataRow videojuego in top10)
+do
 {
-    Console.WriteLine(
-        $"{videojuego["Name"]} - {Convert.ToDecimal(videojuego["GlobalSales"]):N2} millones");
-}
+    Console.Clear();
 
-// 10. Consultamos las ventas agrupadas por género.
-var ventasPorGenero = consultas.ObtenerVentasPorGenero();
+    Console.WriteLine("========== GAME CATALOG ==========");
+    Console.WriteLine("1. Top 10 videojuegos más vendidos");
+    Console.WriteLine("2. Ventas totales por género");
+    Console.WriteLine("3. Número de videojuegos por plataforma");
+    Console.WriteLine("4. Top 10 publishers");
+    Console.WriteLine("5. Ventas totales por región");
+    Console.WriteLine("6. ¿Cuántos datos hay en total?");
+    Console.WriteLine("0. Salir");
+    Console.WriteLine("==================================");
+    Console.Write("Selecciona una opción: ");
 
-// 11. Mostramos los resultados.
-Console.WriteLine("\nVENTAS GLOBALES POR GÉNERO");
-Console.WriteLine("--------------------------------");
+    opcion = Console.ReadLine() ?? "";
 
-foreach (var genero in ventasPorGenero)
-{
-    Console.WriteLine(
-        $"{genero.Genero}: {genero.Ventas:N2} millones");
-}
-
-// 12. Consultamos los videojuegos por plataforma.
-var juegosPorPlataforma = consultas.ObtenerJuegosPorPlataforma();
-
-// 13. Mostramos los resultados.
-Console.WriteLine("\nVIDEOJUEGOS POR PLATAFORMA");
-Console.WriteLine("--------------------------------");
-
-foreach (var plataforma in juegosPorPlataforma)
-{
-    Console.WriteLine(
-        $"{plataforma.Plataforma}: {plataforma.Cantidad} videojuegos");
-}
-
-// 12. Calcular las ventas totales por región.
-DataTable tablaVideojuegos = catalogo.Datos.Tables["Videojuegos"]!;
-
-var ventasPorRegion = new[]
-{
-    new
+    switch (opcion)
     {
-        Region = "Norteamérica",
-        TotalVentas = tablaVideojuegos.AsEnumerable()
-            .Sum(v => v.Field<decimal>("NaSales"))
-    },
-    new
-    {
-        Region = "Europa",
-        TotalVentas = tablaVideojuegos.AsEnumerable()
-            .Sum(v => v.Field<decimal>("EuSales"))
-    },
-    new
-    {
-        Region = "Japón",
-        TotalVentas = tablaVideojuegos.AsEnumerable()
-            .Sum(v => v.Field<decimal>("JpSales"))
-    },
-    new
-    {
-        Region = "Otros mercados",
-        TotalVentas = tablaVideojuegos.AsEnumerable()
-            .Sum(v => v.Field<decimal>("OtherSales"))
+        case "1":
+            Console.WriteLine("\n===== TOP 10 VIDEOJUEGOS MÁS VENDIDOS =====");
+
+            var resultadoTop10 = consultas.ObtenerTop10Videojuegos();
+
+            foreach (DataRow videojuego in resultadoTop10)
+            {
+                Console.WriteLine(
+                    $"{videojuego["Name"]} - " +
+                    $"{Convert.ToDecimal(videojuego["GlobalSales"]):N2} millones");
+            }
+
+            break;
+
+        case "2":
+            Console.WriteLine("\n===== VENTAS TOTALES POR GÉNERO =====");
+
+            var ventasPorGenero = consultas.ObtenerVentasPorGenero();
+
+            foreach (var genero in ventasPorGenero)
+            {
+                Console.WriteLine(
+                    $"{genero.Genero}: {genero.Ventas:N2} millones");
+            }
+
+            break;
+
+        case "3":
+            Console.WriteLine("\n===== VIDEOJUEGOS POR PLATAFORMA =====");
+
+            var juegosPorPlataforma = consultas.ObtenerJuegosPorPlataforma();
+
+            foreach (var plataforma in juegosPorPlataforma)
+            {
+                Console.WriteLine(
+                    $"{plataforma.Plataforma}: {plataforma.Cantidad} videojuegos");
+            }
+
+            break;
+
+        case "4":
+            Console.WriteLine("\nTOP 10 PUBLISHERS CON MÁS VIDEOJUEGOS");
+
+            var juegosPorPublisher = consultas.ObtenerTop10Publishers();
+
+            foreach (var publisher in juegosPorPublisher)
+            {
+                Console.WriteLine(
+                    $"{publisher.Publisher}: {publisher.Cantidad} videojuegos");
+            }
+
+            break;
+
+        case "5":
+            Console.WriteLine("\nVENTAS GLOBALES POR REGIÓN");
+
+            var ventasPorRegion = consultas.ObtenerVentasPorRegion();
+
+            Console.WriteLine($"Norteamérica: {ventasPorRegion.Norteamerica:N2} millones");
+            Console.WriteLine($"Europa: {ventasPorRegion.Europa:N2} millones");
+            Console.WriteLine($"Japón: {ventasPorRegion.Japon:N2} millones");
+            Console.WriteLine($"Otros mercados: {ventasPorRegion.Otros:N2} millones");
+
+            break;
+
+        case "6":
+            Console.WriteLine("\nDATOS DE LA TABLA");
+
+            Console.WriteLine($"Videojuegos importados: {total}");
+            Console.WriteLine($"Géneros: {catalogo.Datos.Tables["Generos"]!.Rows.Count}");
+            Console.WriteLine($"Plataformas: {catalogo.Datos.Tables["Plataformas"]!.Rows.Count}");
+            Console.WriteLine($"Publishers: {catalogo.Datos.Tables["Publishers"]!.Rows.Count}");
+
+            break;
+
+        case "0":
+            Console.WriteLine("\n¡Hasta pronto!");
+            break;
+
+        default:
+            Console.WriteLine("Opción no válida.");
+            break;
     }
-}
-.OrderByDescending(r => r.TotalVentas);
 
-// Mostrar los resultados.
-Console.WriteLine("\nVENTAS GLOBALES POR REGIÓN");
-Console.WriteLine("--------------------------------");
+    if (opcion != "0")
+    {
+        Console.WriteLine();
+        Console.WriteLine("Pulsa una tecla para continuar...");
+        Console.ReadKey();
+    }
 
-foreach (var region in ventasPorRegion)
-{
-    Console.WriteLine(
-        $"{region.Region}: {region.TotalVentas:N2} millones");
-}
-
-
-
-// 5. Mostramos los resultados.
-Console.WriteLine("\nIMPORTACIÓN COMPLETADA");
-Console.WriteLine("----------------------");
-Console.WriteLine($"Videojuegos importados: {total}");
-Console.WriteLine($"Géneros: {catalogo.Datos.Tables["Generos"]!.Rows.Count}");
-Console.WriteLine($"Plataformas: {catalogo.Datos.Tables["Plataformas"]!.Rows.Count}");
-Console.WriteLine($"Publishers: {catalogo.Datos.Tables["Publishers"]!.Rows.Count}");
-
-Console.WriteLine("\nPulsa una tecla para salir...");
-Console.ReadKey();
+} while (opcion != "0");

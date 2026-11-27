@@ -2,6 +2,7 @@
 
 namespace GameCatalog.Repositorio.Implementaciones.Consultas
 {
+    // Esta clase se encargará de realizar las consultas
     public class ConsultasVideojuegos
     {
         private readonly DataSet _datos;
